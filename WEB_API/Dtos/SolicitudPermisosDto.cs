@@ -4,6 +4,7 @@ namespace WEB_API.Dtos
 {
     public class SolicitudPermisosDto
     {
+        public int Id { get; set; }
         public int UserId { get; set; }
         public DateTime Fecha { get; set; }
         public string Tipo { get; set; }

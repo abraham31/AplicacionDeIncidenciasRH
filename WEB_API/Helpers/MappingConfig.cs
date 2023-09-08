@@ -4,9 +4,9 @@ using WEB_API.Dtos;
 
 namespace WEB_API.Helpers
 {
-    public class MappingProfiles : Profile
+    public class MappingConfig : Profile
     {
-        public MappingProfiles()
+        public MappingConfig()
         {
             CreateMap<SolicitudVacaciones, SolicitudVacacionesDto>().ReverseMap();
             CreateMap<SolicitudPermiso, SolicitudPermisosDto>().ReverseMap();

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Data
 {
-    internal class SolicitudPermisosRepository : Repository<SolicitudPermiso>, ISolicitudPermisoRepository
+    public class SolicitudPermisosRepository : Repository<SolicitudPermiso>, ISolicitudPermisoRepository
     {
         private readonly ApplicationDbContext _db;
         public SolicitudPermisosRepository(ApplicationDbContext db) : base(db)

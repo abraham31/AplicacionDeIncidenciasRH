@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Infrastructure.Data;
+using WEB_API.Helpers;
+using Core.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,7 +15,13 @@ builder.Services.AddDbContext<ApplicationDbContext>(option =>
 {
     option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
-builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+builder.Services.AddAutoMapper(typeof(MappingConfig));
+
+builder.Services.AddScoped<ISolicitudVacacionesRepository, SolicitudVacacionesRepository>();
+builder.Services.AddScoped<ISolicitudPermisoRepository, SolicitudPermisosRepository>();
+builder.Services.AddScoped<IInformeQuejaRepository, InformeQuejaRepository>();
+
+
 
 var app = builder.Build();
 

@@ -4,6 +4,7 @@ namespace WEB_API.Dtos
 {
     public class SolicitudVacacionesDto
     {
+        public int Id { get; set; }
         public int UserId { get; set; }
         public DateTime FechaInicio { get; set; }
         public DateTime FechaFin { get; set; }

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Data
 {
-    internal class InformeQuejaRepository : Repository<InformeQueja>, IInformeQuejaRepository
+    public class InformeQuejaRepository : Repository<InformeQueja>, IInformeQuejaRepository
     {
         private readonly ApplicationDbContext _db;
         public InformeQuejaRepository(ApplicationDbContext db) : base(db)
