@@ -7,7 +7,8 @@ using System.Net;
 using Core.Entities;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Azure;
-
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WEB_API.Controllers
 {
@@ -86,6 +87,7 @@ namespace WEB_API.Controllers
             return _response;
         }
 
+        
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -103,8 +105,15 @@ namespace WEB_API.Controllers
                 {
                     return BadRequest(solicitudVacacionesDto);
                 }
+                var userIdString = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 SolicitudVacaciones modelo = _mapper.Map<SolicitudVacaciones>(solicitudVacacionesDto);
 
+                if (!int.TryParse(userIdString, out int userId))
+                {
+                    return BadRequest("El ID de usuario no es válido");
+                }
+
+                modelo.UserId = userId;
                 modelo.FechaDeCreacion = DateTime.Now;
                 modelo.FechaDeModificacion = DateTime.Now;
                 await _solicitudVacacionesRepo.Crear(modelo);
@@ -163,20 +172,50 @@ namespace WEB_API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UpdateSolicitudVacaciones(int id, [FromBody] SolicitudVacacionesDto solicitudVacacionesUpdateDto)
         {
-            if (solicitudVacacionesUpdateDto == null || id != solicitudVacacionesUpdateDto.Id)
+            try
+            {
+                if (solicitudVacacionesUpdateDto == null || id != solicitudVacacionesUpdateDto.Id)
+                {
+                    _response.IsExitoso = false;
+                    _response.statusCode = HttpStatusCode.BadRequest;
+                    return BadRequest(_response);
+                }
+
+                // Obtener la solicitud existente de la base de datos
+                var solicitudExistente = await _solicitudVacacionesRepo.GetByIdAsync(id);
+
+                if (solicitudExistente == null)
+                {
+                    _response.statusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
+                }
+
+                // Actualizar los campos de la solicitud existente con los valores del DTO
+                solicitudExistente.UserId = solicitudVacacionesUpdateDto.UserId;
+                solicitudExistente.FechaInicio = solicitudVacacionesUpdateDto.FechaInicio;
+                solicitudExistente.FechaFin = solicitudVacacionesUpdateDto.FechaFin;
+                solicitudExistente.Estado = solicitudVacacionesUpdateDto.Estado;
+
+                // Verificar si se ha especificado un usuario asignado y actualizarlo si es necesario
+                if (solicitudVacacionesUpdateDto.UsuarioAsignadoId.HasValue)
+                {
+                    solicitudExistente.UsuarioAsignadoId = solicitudVacacionesUpdateDto.UsuarioAsignadoId.Value;
+                }
+
+                // Realizar la actualización en la base de datos
+                await _solicitudVacacionesRepo.Actualizar(solicitudExistente);
+
+                _response.statusCode = HttpStatusCode.NoContent;
+
+                return Ok(_response);
+            }
+            catch (Exception ex)
             {
                 _response.IsExitoso = false;
-                _response.statusCode = HttpStatusCode.BadRequest;
-                return BadRequest(_response);
+                _response.ErrorMessages = new List<string>() { ex.ToString() };
+                _response.statusCode = HttpStatusCode.InternalServerError;
+                return StatusCode(StatusCodes.Status500InternalServerError, _response);
             }
-
-            SolicitudVacaciones modelo = _mapper.Map<SolicitudVacaciones>(solicitudVacacionesUpdateDto);
-
-
-            await _solicitudVacacionesRepo.Actualizar(modelo);
-            _response.statusCode = HttpStatusCode.NoContent;
-
-            return Ok(_response);
         }
     }
 }

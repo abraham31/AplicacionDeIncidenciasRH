@@ -2,9 +2,11 @@
 using AutoMapper;
 using Core.Entities;
 using Core.Interfaces;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Data;
 using System.Net;
+using System.Security.Claims;
 using WEB_API.Dtos;
 
 namespace WEB_API.Controllers
@@ -26,6 +28,7 @@ namespace WEB_API.Controllers
             _response = new();
         }
 
+        [Authorize(Roles = "admin")]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<ApiResponse>> GetInformeQueja()
@@ -48,6 +51,7 @@ namespace WEB_API.Controllers
             return _response;
         }
 
+        [Authorize(Roles = "admin")]
         [HttpGet("Id:int", Name = "GetInformeQueja")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -102,8 +106,15 @@ namespace WEB_API.Controllers
                 {
                     return BadRequest(informequejaDto);
                 }
+                var userIdString = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 InformeQueja modelo = _mapper.Map<InformeQueja>(informequejaDto);
 
+                if (!int.TryParse(userIdString, out int userId))
+                {
+                    return BadRequest("El ID de usuario no es válido");
+                }
+
+                modelo.UserId = userId;
                 modelo.FechaDeCreacion = DateTime.Now;
                 modelo.FechaDeModificacion = DateTime.Now;
                 await _informeQejaRepo.Crear(modelo);
@@ -121,6 +132,7 @@ namespace WEB_API.Controllers
             return _response;
         }
 
+        [Authorize(Roles = "admin")]
         [HttpDelete("{id:int}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -155,6 +167,7 @@ namespace WEB_API.Controllers
             }
             return BadRequest(_response);
         }
+
 
         [HttpPut("{id:int}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]

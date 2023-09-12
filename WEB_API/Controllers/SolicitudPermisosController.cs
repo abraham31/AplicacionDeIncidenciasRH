@@ -4,6 +4,7 @@ using Core.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
+using System.Security.Claims;
 using WEB_API.Dtos;
 
 namespace WEB_API.Controllers
@@ -100,8 +101,15 @@ namespace WEB_API.Controllers
                 {
                     return BadRequest(solicitudPermisoDto);
                 }
+                var userIdString = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 SolicitudPermiso modelo = _mapper.Map<SolicitudPermiso>(solicitudPermisoDto);
 
+                if (!int.TryParse(userIdString, out int userId))
+                {
+                    return BadRequest("El ID de usuario no es válido");
+                }
+
+                modelo.UserId = userId;
                 modelo.FechaDeCreacion = DateTime.Now;
                 modelo.FechaDeModificacion = DateTime.Now;
                 await _solicitudPermisoRepo.Crear(modelo);

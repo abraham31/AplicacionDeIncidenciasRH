@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using Core.Entities;
+using Core.Entities.Auth;
+using Core.Entities.Auth.AuthDto;
 using WEB_API.Dtos;
 
 namespace WEB_API.Helpers
@@ -11,8 +13,10 @@ namespace WEB_API.Helpers
             CreateMap<SolicitudVacaciones, SolicitudVacacionesDto>().ReverseMap();
             CreateMap<SolicitudPermiso, SolicitudPermisosDto>().ReverseMap();
             CreateMap<InformeQueja, InformeQuejaDto>().ReverseMap();
-            CreateMap<Estadistica, EstadisticaDto>().ReverseMap();
-            CreateMap<ComunicacionInterna, ComunicacionInternaDto>().ReverseMap();
+            CreateMap<EstadisticasGenerales, EstadisticasGeneralesDto>().ReverseMap();
+            CreateMap<EstadisticasPorPeriodo, EstadisticasGeneralesDto>().ReverseMap();
+            CreateMap<UserApplication, UserDto>().ReverseMap();
+
         }
     }
 }

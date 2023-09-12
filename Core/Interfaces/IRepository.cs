@@ -1,10 +1,5 @@
 ﻿using Core.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Core.Interfaces
 {
@@ -12,11 +7,11 @@ namespace Core.Interfaces
     {
         Task Crear(T entity);
         Task<List<T>> ObtenerTodos(Expression<Func<T, bool>>? filtro = null, string? incluirPropiedades = null);
-
+        Task<List<T>> ObtenerTodosAsync(Expression<Func<T, bool>>? filtro = null, string? incluirPropiedades = null);
+        Task<IEnumerable<T>> ObtenerPorPeriodoAsync(Expression<Func<T, DateTime>> fechaSelector, DateTime fechaInicio, DateTime fechaFin);
+        Task<T> GetByIdAsync(int id);
         Task<T> Obtener(Expression<Func<T, bool>> filtro = null, bool tracked = true, string? incluirPropiedades = null);
-
         Task Remover(T entidad);
-
         Task Grabar();
     }
 }

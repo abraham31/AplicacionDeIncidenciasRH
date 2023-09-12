@@ -21,6 +21,11 @@ namespace Infrastructure.Data
             await Grabar();
         }
 
+        public async Task<T> GetByIdAsync(int id)
+        {
+            return await dbSet.FindAsync(id);
+        }
+
         public async Task Grabar()
         {
             await _db.SaveChangesAsync();
@@ -49,6 +54,21 @@ namespace Infrastructure.Data
             return await query.FirstOrDefaultAsync();
         }
 
+        public async Task<IEnumerable<T>> ObtenerPorPeriodoAsync(Expression<Func<T, DateTime>> fechaSelector, DateTime fechaInicio, DateTime fechaFin)
+        {
+            
+            Expression<Func<T, bool>> periodoFilter = entidad =>
+                fechaSelector.Compile()(entidad) >= fechaInicio &&
+                fechaSelector.Compile()(entidad) <= fechaFin;
+
+            
+            var entidadesPorPeriodo = await dbSet
+                .Where(periodoFilter)
+                .ToListAsync();
+
+            return entidadesPorPeriodo;
+        }
+
         public async Task<List<T>> ObtenerTodos(Expression<Func<T, bool>>? filtro = null, string? incluirPropiedades = null)
         {
             IQueryable<T> query = dbSet;
@@ -57,6 +77,24 @@ namespace Infrastructure.Data
                 query = query.Where(filtro);
             }
             if (incluirPropiedades != null)  
+            {
+                foreach (var incluirProp in incluirPropiedades.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(incluirProp);
+                }
+            }
+            return await query.ToListAsync();
+        }
+
+        public async Task<List<T>> ObtenerTodosAsync(Expression<Func<T, bool>>? filtro = null, string? incluirPropiedades = null)
+        {
+
+            IQueryable<T> query = dbSet;
+            if (filtro != null)
+            {
+                query = query.Where(filtro);
+            }
+            if (incluirPropiedades != null)
             {
                 foreach (var incluirProp in incluirPropiedades.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
                 {
