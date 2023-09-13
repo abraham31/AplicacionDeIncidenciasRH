@@ -89,6 +89,7 @@ namespace WEB_API.Controllers
 
         
         [HttpPost]
+        [Authorize(Roles = "admin", AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -108,12 +109,7 @@ namespace WEB_API.Controllers
                 var userIdString = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 SolicitudVacaciones modelo = _mapper.Map<SolicitudVacaciones>(solicitudVacacionesDto);
 
-                if (!int.TryParse(userIdString, out int userId))
-                {
-                    return BadRequest("El ID de usuario no es válido");
-                }
-
-                modelo.UserId = userId;
+                modelo.UserId = userIdString;
                 modelo.FechaDeCreacion = DateTime.Now;
                 modelo.FechaDeModificacion = DateTime.Now;
                 await _solicitudVacacionesRepo.Crear(modelo);

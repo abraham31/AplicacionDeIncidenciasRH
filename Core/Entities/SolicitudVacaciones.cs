@@ -2,7 +2,7 @@
 {
     public class SolicitudVacaciones : BaseEntity
     {
-        public int UserId { get; set; }
+        public string UserId { get; set; }
         public DateTime FechaSolicitud { get; set; }
         public DateTime FechaInicio { get; set; }
         public DateTime FechaFin { get; set; }

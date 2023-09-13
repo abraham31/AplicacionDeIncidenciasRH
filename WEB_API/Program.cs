@@ -42,12 +42,6 @@ builder.Services.AddSwaggerGen(options => {
             new List<string>()
         }
     });
-    options.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Version = "v1",
-        Title = "Aplicacion Incidencias API",
-        Description = "API para solicitudes y reportes"
-    });
 });
 
 var key = builder.Configuration.GetValue<string>("ApiSettings:Secret");
@@ -68,6 +62,9 @@ builder.Services.AddAuthentication(x =>
             ValidateAudience = false
         };
     });
+
+
+
 builder.Services.AddDbContext<ApplicationDbContext>(option =>
 {
     option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));

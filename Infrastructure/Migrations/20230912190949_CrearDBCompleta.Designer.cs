@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230911035657_SeCreadDb")]
-    partial class SeCreadDb
+    [Migration("20230912190949_CrearDBCompleta")]
+    partial class CrearDBCompleta
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -281,6 +281,9 @@ namespace Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UsuarioAsignadoId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");

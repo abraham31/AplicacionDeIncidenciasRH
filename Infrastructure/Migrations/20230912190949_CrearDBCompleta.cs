@@ -1,12 +1,14 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
+
+using System;
+
 
 #nullable disable
 
 namespace Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class SeCreadDb : Migration
+    public partial class CrearDBCompleta : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -135,6 +137,7 @@ namespace Infrastructure.Migrations
                     FechaInicio = table.Column<DateTime>(type: "datetime2", nullable: false),
                     FechaFin = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Estado = table.Column<int>(type: "int", nullable: false),
+                    UsuarioAsignadoId = table.Column<int>(type: "int", nullable: true),
                     FechaDeCreacion = table.Column<DateTime>(type: "datetime2", nullable: false),
                     FechaDeModificacion = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
