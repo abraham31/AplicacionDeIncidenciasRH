@@ -4,10 +4,11 @@ using Core.Entities;
 using Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Data;
+using Microsoft.AspNetCore.SignalR;
 using System.Net;
 using System.Security.Claims;
 using WEB_API.Dtos;
+using WEB_API.Helpers;
 
 namespace WEB_API.Controllers
 {
@@ -15,15 +16,18 @@ namespace WEB_API.Controllers
     [ApiController]
     public class InformeQuejaController : ControllerBase
     {
+        private readonly IHubContext<NotHub> _hubContext;
         private readonly ILogger<InformeQuejaController> _logger;
         private readonly IInformeQuejaRepository _informeQejaRepo;
         private readonly IMapper _mapper;
         protected ApiResponse _response;
 
-        public InformeQuejaController(ILogger<InformeQuejaController> logger, IInformeQuejaRepository informequejaRepo, IMapper mapper)
+        public InformeQuejaController(ILogger<InformeQuejaController> logger, 
+            IInformeQuejaRepository informequejaRepo, IMapper mapper, IHubContext<NotHub> hubContext)
         {
             _logger = logger;
             _informeQejaRepo = informequejaRepo;
+            _hubContext = hubContext;
             _mapper = mapper;
             _response = new();
         }
@@ -106,6 +110,7 @@ namespace WEB_API.Controllers
                 {
                     return BadRequest(informequejaDto);
                 }
+
                 var userIdString = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 InformeQueja modelo = _mapper.Map<InformeQueja>(informequejaDto);
 
@@ -117,19 +122,33 @@ namespace WEB_API.Controllers
                 modelo.UserId = userId;
                 modelo.FechaDeCreacion = DateTime.Now;
                 modelo.FechaDeModificacion = DateTime.Now;
+
                 await _informeQejaRepo.Crear(modelo);
+
                 _response.Resultado = modelo;
                 _response.statusCode = HttpStatusCode.Created;
 
-                return CreatedAtRoute("GetInformeQueja", new { id = modelo.Id }, _response);
+                try
+                {
+                    // Intenta enviar la notificación
+                    await _hubContext.Clients.User(userIdString).SendAsync("ReceiveNotification", "Nuevo informe de queja creado");
+                }
+                catch (Exception ex)
+                {
+                    // Si ocurre un error al enviar la notificación, agrega un mensaje de error específico
+                    _response.ErrorMessages = new List<string>() { "Error al enviar la notificación: " + ex.Message };
+                    // Puedes configurar un código de estado apropiado, como 500 (Error interno del servidor)
+                    return StatusCode(StatusCodes.Status500InternalServerError, _response);
+                }
 
+                return CreatedAtRoute("GetInformeQueja", new { id = modelo.Id }, _response);
             }
             catch (Exception ex)
             {
                 _response.IsExitoso = false;
                 _response.ErrorMessages = new List<string>() { ex.ToString() };
+                return StatusCode(StatusCodes.Status500InternalServerError, _response);
             }
-            return _response;
         }
 
         [Authorize(Roles = "admin")]

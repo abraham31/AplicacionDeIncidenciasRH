@@ -1,14 +1,13 @@
 ﻿using AutoMapper;
-using Core.Interfaces;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using WEB_API.Dtos;
-using System.Net;
 using Core.Entities;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Azure;
-using System.Security.Claims;
+using Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using System.Net;
+using System.Security.Claims;
+using WEB_API.Dtos;
+using WEB_API.Helpers;
 
 namespace WEB_API.Controllers
 {
@@ -16,15 +15,18 @@ namespace WEB_API.Controllers
     [ApiController]
     public class SolicitudVacacionesController : ControllerBase
     {
+        private readonly IHubContext<NotHub> _hubContext;
         private readonly ILogger<SolicitudVacacionesController> _logger;
         private readonly ISolicitudVacacionesRepository _solicitudVacacionesRepo;
         private readonly IMapper _mapper;
         protected ApiResponse _response;
 
-        public SolicitudVacacionesController(ILogger<SolicitudVacacionesController> logger, ISolicitudVacacionesRepository solicitudVacacionesRepo, IMapper mapper)
+        public SolicitudVacacionesController(ILogger<SolicitudVacacionesController> logger, 
+            ISolicitudVacacionesRepository solicitudVacacionesRepo, IMapper mapper, IHubContext<NotHub> hubContext)
         {
             _logger = logger;
             _solicitudVacacionesRepo = solicitudVacacionesRepo;
+            _hubContext = hubContext;
             _mapper = mapper;
             _response = new();
         }
@@ -109,12 +111,30 @@ namespace WEB_API.Controllers
                 var userIdString = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 SolicitudVacaciones modelo = _mapper.Map<SolicitudVacaciones>(solicitudVacacionesDto);
 
+                if (!int.TryParse(userIdString, out int userId))
+                {
+                    return BadRequest("El ID de usuario no es válido");
+                }
+
                 modelo.UserId = userIdString;
                 modelo.FechaDeCreacion = DateTime.Now;
                 modelo.FechaDeModificacion = DateTime.Now;
                 await _solicitudVacacionesRepo.Crear(modelo);
                 _response.Resultado = modelo;
                 _response.statusCode = HttpStatusCode.Created;
+
+                try
+                {
+                    // Intenta enviar la notificación
+                    await _hubContext.Clients.User(userIdString).SendAsync("ReceiveNotification", "Nueva solicitud de vacaciones creada");
+                }
+                catch (Exception ex)
+                {
+                    // Si ocurre un error al enviar la notificación, agrega un mensaje de error específico
+                    _response.ErrorMessages = new List<string>() { "Error al enviar la notificación: " + ex.Message };
+                    // Puedes configurar un código de estado apropiado, como 500 (Error interno del servidor)
+                    return StatusCode(StatusCodes.Status500InternalServerError, _response);
+                }
 
                 return CreatedAtRoute("GetSolicitudVacacion", new { id = modelo.Id }, _response);
 

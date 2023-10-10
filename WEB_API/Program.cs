@@ -74,6 +74,7 @@ builder.Services.AddIdentity<UserApplication, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddAutoMapper(typeof(MappingConfig));
+builder.Services.AddSignalR();
 
 builder.Services.AddScoped<ISolicitudVacacionesRepository, SolicitudVacacionesRepository>();
 builder.Services.AddScoped<ISolicitudPermisoRepository, SolicitudPermisosRepository>();
@@ -91,6 +92,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.MapHub<NotHub>("/notification-hub");
 
 app.UseAuthentication();
 app.UseAuthorization();

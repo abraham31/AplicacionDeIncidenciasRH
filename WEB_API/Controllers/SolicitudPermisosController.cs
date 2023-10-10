@@ -3,9 +3,11 @@ using Core.Entities;
 using Core.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using System.Net;
 using System.Security.Claims;
 using WEB_API.Dtos;
+using WEB_API.Helpers;
 
 namespace WEB_API.Controllers
 {
@@ -13,15 +15,18 @@ namespace WEB_API.Controllers
     [ApiController]
     public class SolicitudPermisosController : ControllerBase
     {
+        private readonly IHubContext<NotHub> _hubContext;
         private readonly ILogger<SolicitudPermisosController> _logger;
         private readonly ISolicitudPermisoRepository _solicitudPermisoRepo;
         private readonly IMapper _mapper;
         protected ApiResponse _response;
 
-        public SolicitudPermisosController(ILogger<SolicitudPermisosController> logger, ISolicitudPermisoRepository solicitudPermisoRepo, IMapper mapper)
+        public SolicitudPermisosController(ILogger<SolicitudPermisosController> logger, 
+            ISolicitudPermisoRepository solicitudPermisoRepo, IMapper mapper, IHubContext<NotHub> hubContext)
         {
             _logger = logger;
             _solicitudPermisoRepo = solicitudPermisoRepo;
+            _hubContext = hubContext;
             _mapper = mapper;
             _response = new();
         }
@@ -115,6 +120,19 @@ namespace WEB_API.Controllers
                 await _solicitudPermisoRepo.Crear(modelo);
                 _response.Resultado = modelo;
                 _response.statusCode = HttpStatusCode.Created;
+
+                try
+                {
+                    // Intenta enviar la notificación
+                    await _hubContext.Clients.User(userIdString).SendAsync("ReceiveNotification", "Nuevo solicitud de permiso creada");
+                }
+                catch (Exception ex)
+                {
+                    // Si ocurre un error al enviar la notificación, agrega un mensaje de error específico
+                    _response.ErrorMessages = new List<string>() { "Error al enviar la notificación: " + ex.Message };
+                    // Puedes configurar un código de estado apropiado, como 500 (Error interno del servidor)
+                    return StatusCode(StatusCodes.Status500InternalServerError, _response);
+                }
 
                 return CreatedAtRoute("GetSolicitudPermiso", new { id = modelo.Id }, _response);
 
