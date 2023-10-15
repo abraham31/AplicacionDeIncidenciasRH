@@ -1,14 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
-
-using System;
-
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class CrearDBCompleta : Migration
+    public partial class CreateDbWithConfig : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -97,7 +95,7 @@ namespace Infrastructure.Migrations
                     UserId = table.Column<int>(type: "int", nullable: false),
                     FechaInforme = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Titulo = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Descripcion = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Descripcion = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Estado = table.Column<int>(type: "int", nullable: false),
                     FechaDeCreacion = table.Column<DateTime>(type: "datetime2", nullable: false),
                     FechaDeModificacion = table.Column<DateTime>(type: "datetime2", nullable: false)
@@ -113,10 +111,10 @@ namespace Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     FechaPermiso = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Fecha = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Tipo = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Tipo = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Estado = table.Column<int>(type: "int", nullable: false),
                     FechaDeCreacion = table.Column<DateTime>(type: "datetime2", nullable: false),
                     FechaDeModificacion = table.Column<DateTime>(type: "datetime2", nullable: false)
@@ -132,7 +130,7 @@ namespace Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     FechaSolicitud = table.Column<DateTime>(type: "datetime2", nullable: false),
                     FechaInicio = table.Column<DateTime>(type: "datetime2", nullable: false),
                     FechaFin = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -144,22 +142,6 @@ namespace Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_SolicitudesVacaciones", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "User",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Names = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Role = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_User", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -340,9 +322,6 @@ namespace Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "SolicitudesVacaciones");
-
-            migrationBuilder.DropTable(
-                name: "User");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

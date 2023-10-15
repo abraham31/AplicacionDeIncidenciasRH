@@ -119,6 +119,7 @@ namespace WEB_API.Controllers
                 modelo.UserId = userIdString;
                 modelo.FechaDeCreacion = DateTime.Now;
                 modelo.FechaDeModificacion = DateTime.Now;
+                modelo.Estado = EstadoIncidencia.Pendinte;
                 await _solicitudVacacionesRepo.Crear(modelo);
                 _response.Resultado = modelo;
                 _response.statusCode = HttpStatusCode.Created;

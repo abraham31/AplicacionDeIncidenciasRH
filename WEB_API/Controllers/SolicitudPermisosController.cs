@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
 using Core.Entities;
 using Core.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using System.Data;
 using System.Net;
 using System.Security.Claims;
 using WEB_API.Dtos;
@@ -53,7 +55,7 @@ namespace WEB_API.Controllers
             return _response;
         }
 
-        [HttpGet("Id:int", Name = "GetSolicitadPermiso")]
+        [HttpGet("Id:int", Name = "GetSolicitudPermiso")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -90,6 +92,7 @@ namespace WEB_API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "admin", AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -109,14 +112,15 @@ namespace WEB_API.Controllers
                 var userIdString = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 SolicitudPermiso modelo = _mapper.Map<SolicitudPermiso>(solicitudPermisoDto);
 
-                if (!int.TryParse(userIdString, out int userId))
+                if (string.IsNullOrEmpty(userIdString))
                 {
-                    return BadRequest("El ID de usuario no es válido");
+                    return BadRequest("Error al obtener el UserId del contexto actual.");
                 }
 
-                modelo.UserId = userId;
+                modelo.UserId = userIdString;
                 modelo.FechaDeCreacion = DateTime.Now;
                 modelo.FechaDeModificacion = DateTime.Now;
+                modelo.Estado = EstadoIncidencia.Pendinte;
                 await _solicitudPermisoRepo.Crear(modelo);
                 _response.Resultado = modelo;
                 _response.statusCode = HttpStatusCode.Created;

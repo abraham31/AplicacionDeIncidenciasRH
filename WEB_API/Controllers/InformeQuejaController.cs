@@ -122,6 +122,7 @@ namespace WEB_API.Controllers
                 modelo.UserId = userId;
                 modelo.FechaDeCreacion = DateTime.Now;
                 modelo.FechaDeModificacion = DateTime.Now;
+                modelo.Estado = EstadoIncidencia.Pendinte;
 
                 await _informeQejaRepo.Crear(modelo);
 
