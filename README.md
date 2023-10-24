@@ -1,5 +1,5 @@
 # AplicacionDeIncidenciasRH
-Algunos endpoint podrain ser
+      ## Falta implementar sistema de notificaciones/ Autogeneracion de reportes mensuales
 
 # Gestión de Informes:
 
